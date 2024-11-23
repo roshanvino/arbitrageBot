@@ -46,7 +46,6 @@ def build_dataframe(odds_data: List[Dict]) -> pd.DataFrame:
     """
     rows_list = []
 
-    # Iterate through games
     for game in odds_data:
         bookmakers = game.get('bookmakers', [])
         for bookmaker in bookmakers:
@@ -125,6 +124,29 @@ def calculate_stakes(df: pd.DataFrame, total_stake: float) -> pd.DataFrame:
     return df
 
 
+def display_arbitrage_opportunities(df: pd.DataFrame):
+    """
+    Display arbitrage opportunities in a neat, separated format.
+
+    :param df: DataFrame containing arbitrage opportunities.
+    """
+    grouped = df.groupby('game_id')
+    for game_id, group in grouped:
+        print("\n" + "=" * 50)
+        print(f"Game ID: {game_id}")
+        print(f"{group.iloc[0]['home_team']} vs {group.iloc[0]['away_team']}")
+        print(f"Commence Time: {group.iloc[0]['commence_time']}")
+        print("\nArbitrage Opportunities:")
+        for _, row in group.iterrows():
+            print(f" - Outcome: {row['outcome_name']}")
+            print(f"   Bookmaker: {row['bookmaker_title']}")
+            print(f"   Odds: {row['outcome_price']:.2f}")
+            print(f"   Stake: £{row['stake']:.2f}")
+        roi = group.iloc[0]['roi']
+        print(f"\nEstimated ROI: {roi:.2%}")
+        print("=" * 50)
+
+
 def main():
     # Replace with your API key
     api_key = "3534c6a066f5fe4b5e7a6ce4b575c04e"
@@ -151,8 +173,7 @@ def main():
     df_arbitrage = calculate_stakes(df_arbitrage, total_stake)
 
     # Display the arbitrage opportunities
-    print(df_arbitrage[['game_id', 'home_team', 'away_team', 'outcome_name', 'bookmaker_title',
-                        'outcome_price', 'implied_probability', 'sum_implied_prob', 'stake', 'roi']])
+    display_arbitrage_opportunities(df_arbitrage)
 
 
 if __name__ == "__main__":
